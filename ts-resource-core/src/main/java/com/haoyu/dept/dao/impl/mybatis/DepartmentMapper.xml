@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.dept.dao.impl.mybatis.DepartmentMapper">
+	<resultMap id="DepartmentMap" type="com.haoyu.dept.entity.Department">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<id column="DEPT_NAME" property="deptName" jdbcType="VARCHAR" />
+		<id column="DEPT_TYPE" property="deptType" jdbcType="VARCHAR" />
+		<id column="DEPT_CODE" property="deptCode" jdbcType="VARCHAR" />
+		<id column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<id column="IMAGE_URL" property="imageUrl" jdbcType="VARCHAR" />
+		<id column="STAGE" property="stage" jdbcType="VARCHAR" />
+		<id column="WEBSITE" property="website" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="RankDepartment" type="map">
+		<id column="DEPT_NAME" property="deptName" jdbcType="VARCHAR" />
+		<id column="ID" property="id" jdbcType="VARCHAR" />				
+		<id column="IMAGE_URL" property="imageUrl" jdbcType="VARCHAR" />
+		<id column="UPLOAD_NUM" property="uploadNum" jdbcType="DECIMAL" />
+		<id column="DOWNLOAD_NUM" property="downloadNum" jdbcType="DECIMAL" />
+		<id column="WEBSITE" property="website" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="selectColumnSQL" >
+		select ID, DEPT_NAME, DEPT_TYPE, DEPT_CODE, CREATE_TIME, IMAGE_URL, STAGE, WEBSITE
+		from TS_DEPARTMENT 
+	</sql>
+	<select id="select" parameterType="map" resultMap="DepartmentMap">
+		<include refid="selectColumnSQL" />
+		where IS_DELETED = 'N'
+		<if test="deptName != null and deptName != ''">
+			and DEPT_NAME like '%${deptName}%'
+		</if>
+		<if test="deptNameEquils != null and deptNameEquils != ''">
+			and DEPT_NAME = #{deptNameEquils}
+		</if>
+		<if test="deptType != null and deptType != ''">
+			and DEPT_TYPE = #{deptType}
+		</if>
+		<if test="stage != null and stage != ''">
+			and stage = #{stage}
+		</if>
+	</select>
+	<!-- 查询分享达人 -->
+	<select id="getShareMasters" resultType="com.haoyu.user.entity.User" parameterType="map">
+		select ID,REAL_NAME REALNAME ,AVATAR, STAGE , SUBJECT	
+		from BASE_USER_VIEW BUV
+		where BUV.DEPT_ID = #{deptId, jdbcType=VARCHAR}
+		order by  (
+        select  count(R.ID) 
+        from  RESOURCES  R 
+        join RESOURCE_RELATION RR
+		on R.ID = RR.RESOURCE_ID
+		and RR.IS_DELETED = 'N'
+	   	and RR.RELATION_ID = #{deptId, jdbcType=VARCHAR}  
+	   	where  R.CREATOR = BUV.ID AND R.IS_DELETED ='N' AND R.STATE != '5' AND R.TYPE != 'discovery' ) desc
+	</select>
+	
+	<select id="selectByPrimaryKey" parameterType="string" resultMap="DepartmentMap">
+		<include refid="selectColumnSQL" />
+		where ID = #{id, jdbcType=VARCHAR}
+	</select>
+	<insert id="insert" parameterType="com.haoyu.dept.entity.Department">
+		insert into TS_DEPARTMENT
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="deptName != null">
+				DEPT_NAME,
+			</if>
+			<if test="deptType != null">
+				DEPT_TYPE,
+			</if>
+			<if test="deptCode != null">
+				DEPT_CODE,
+			</if>
+			<if test="imageUrl != null">
+				IMAGE_URL,
+			</if>
+			<if test="stage != null">
+				STAGE,
+			</if>
+			<if test="website != null">
+				WEBSITE,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="deptName != null">
+				#{deptName,jdbcType=VARCHAR},
+			</if>
+			<if test="deptType != null">
+				#{deptType,jdbcType=VARCHAR},
+			</if>
+			<if test="deptCode != null">
+				#{deptCode,jdbcType=VARCHAR},
+			</if>
+			<if test="imageUrl != null">
+				#{imageUrl,jdbcType=VARCHAR},
+			</if>
+			<if test="stage != null">
+				#{stage,jdbcType=VARCHAR},
+			</if>
+			<if test="website != null">
+				#{website, jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null and createTime > 0">
+				#{createTime,jdbcType=INTEGER},
+			</if>
+			<if test="updatedby != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null and updateTime > 0">
+				#{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.dept.entity.Department">
+		update TS_DEPARTMENT
+		<set>
+			<if test="deptName != null">
+				DEPT_NAME = #{deptName,jdbcType=VARCHAR},
+			</if>
+			<if test="deptType != null">
+				DEPT_TYPE = #{deptType,jdbcType=VARCHAR},
+			</if>
+			<if test="deptCode != null">
+				DEPT_CODE = #{deptCode,jdbcType=VARCHAR},
+			</if>
+			<if test="imageUrl != null">
+				IMAGE_URL = #{imageUrl,jdbcType=VARCHAR},
+			</if>
+			<if test="stage != null">
+				STAGE = #{stage,jdbcType=VARCHAR},
+			</if>
+			<if test="website != null">
+				WEBSITE = #{website, jdbcType=VARCHAR},
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null and updateTime > 0">
+				UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByIds" parameterType="map">
+		update TS_DEPARTMENT
+		set IS_DELETED = 'Y', UPDATE_TIME = #{entity.updateTime,jdbcType=INTEGER}
+		<if test="updatedby != null">
+			,UPDATEDBY = #{entity.id,jdbcType=VARCHAR}
+		</if>
+		where ID in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+	<select id="getCount" parameterType="map" resultType="int">
+		select count(ID)
+		from TS_DEPARTMENT
+		where IS_DELETED = 'N'
+		<if test="deptName != null and deptName != ''">
+			and DEPT_NAME = #{deptName}
+		</if>
+	</select>
+	
+	<select id="selectRankDepartment" resultMap="RankDepartment">
+		select ID, DEPT_NAME, IMAGE_URL, WEBSITE,
+			(select count(R.ID) 
+			from RESOURCES R 
+			where R.STATE != '5' and R.TYPE != 'discovery' and R.IS_DELETED = 'N' 
+			and exists 
+				(select 1 
+				from RESOURCE_RELATION RR 
+				where RR.RESOURCE_ID = R.ID 
+				and RR.IS_DELETED = 'N' 
+				and RR.RELATION_ID = TD.ID
+				)				
+			) UPLOAD_NUM,
+			(select count(FDU.ID) 
+			from FILE_DOWNLOAD_USER FDU 
+			WHERE FDU.IS_DELETED = 'N' 
+			and exists 
+				(select 1 
+				from TS_USER_DEPT TUD 
+				where FDU.CREATOR = TUD.USER_ID 
+				and TUD.DEPT_ID = TD.ID) 
+			and exists 
+				(select 1 
+				from FILE_RELATION FR 
+				where FR.FILE_ID = FDU.FILE_ID 
+				and FR.IS_DELETED = 'N' 
+				and FR.TYPE = 'resoruces')
+			) DOWNLOAD_NUM
+		from TS_DEPARTMENT TD
+		order by (UPLOAD_NUM+DOWNLOAD_NUM) desc
+	</select>
+	
+	<select id="selectCompetitionRankDepartment" parameterType="map" resultMap="RankDepartment">
+		select td.id,td.dept_name,(
+		select count(R.ID) from RESOURCES R
+		join RESOURCE_RELATION RR on R.ID = rr.RESOURCE_ID
+		and R.IS_DELETED ='N' and R.STATE != '5' and R.TYPE != 'discovery'
+		join COMPETITION C on C.ID = RR.RELATION_ID and C.ID = #{competitionId,jdbcType=VARCHAR}
+		where
+		EXISTS(
+		select 1 from COMPETITION_RELATION CR where CR.RELATION_ID = TD.ID
+		)
+		)UPLOAD_NUM from TS_DEPARTMENT td
+	</select>
+</mapper>

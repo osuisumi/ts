@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.workshop.dao.impl.mybatis.WorkshopBizMapper">
+	<resultMap id="WorkshopResultMap" type="com.haoyu.workshop.entity.WorkshopResult">
+		<result column="ID" property="workshop.id" jdbcType="VARCHAR" />
+		<result column="NAME" property="workshop.name" jdbcType="VARCHAR" />
+		<result column="IMAGE_URL" property="workshop.imageUrl" jdbcType="VARCHAR" />
+		<result column="COMPLETE_NUM" property="completeNum" jdbcType="DECIMAL" />
+		<result column="ROLE" property="workshop.workshopAuthorize.role" jdbcType="VARCHAR" />
+		<collection property="workshop.workshopRelations" ofType="com.haoyu.tip.workshop.entity.WorkshopRelation">
+	   		<id column="WORKSHOP_RELATION_ID" property="id" jdbcType="VARCHAR" />
+	    	<result column="ACTIVITY_NUM" property="activityNum" jdbcType="INTEGER" />
+	    	<result column="RESOURCE_NUM" property="resourceNum" jdbcType="INTEGER" />
+	    </collection>
+	</resultMap>
+	<resultMap id="WorkshopAuthorizeMap" type="map">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="ROLE" property="role" jdbcType="VARCHAR" />
+		<result column="USER_ID" property="userId" jdbcType="VARCHAR" />
+		<result column="REAL_NAME" property="realName" jdbcType="VARCHAR" />
+		<result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR" />
+		<result column="AVATAR" property="avatar" jdbcType="VARCHAR" />
+		<result column="RESOURCE_NUM" property="resourceNum" jdbcType="DECIMAL" />
+		<result column="ACTIVITY_NUM" property="activityNum" jdbcType="DECIMAL" />
+	</resultMap>
+	<select id="selectWorkshopResult" resultMap="WorkshopResultMap" parameterType="map">
+		select  
+		WS.ID, WS.NAME, WS.IMAGE_URL,
+		WR.ACTIVITY_NUM, WR.RESOURCE_NUM, WR.ID WORKSHOP_RELATION_ID,
+		WA.ROLE,
+		(select count(AR.ID) from ACTIVITY_RESULT AR where IS_DELETED = 'N' and STATE = 'completed' and CREATOR = #{userId, jdbcType=VARCHAR} and exists (select 1 from ACTIVITY_RELATION where ID = AR.ACTIVITY_RELATION_ID and IS_DELETED = 'N' and RELATION_ID = WS.ID)) COMPLETE_NUM
+		from WORKSHOP WS
+		join WORKSHOP_RELATION WR
+		on WR.WORKSHOP_ID = WS.ID
+		and WR.IS_DELETED = 'N'
+		join WORKSHOP_AUTHORIZE WA
+		on WA.WORKSHOP_ID = WS.ID 
+		and WA.USER_ID = #{userId, jdbcType=VARCHAR}
+		where WS.IS_DELETED = 'N'
+		<if test="type != null and type != ''">
+			and WS.TYPE = #{type}
+		</if>
+	</select>
+	<select id="selectWorkshopAuthorize" resultMap="WorkshopAuthorizeMap" parameterType="map">
+		select WSA.ID, WSA.ROLE, WSA.USER_ID,
+		BUV.REAL_NAME, BUV.DEPT_NAME, BUV.AVATAR,
+		WSA.CREATE_TIME,
+		(select count(AR.ID) from ACTIVITY_RESULT AR where AR.IS_DELETED = 'N' and AR.CREATOR = WSA.USER_ID and exists (select 1 from ACTIVITY_RELATION where ID = AR.ACTIVITY_RELATION_ID and IS_DELETED = 'N' and RELATION_ID = WSA.WORKSHOP_ID)) ACTIVITY_NUM,
+		(select count(R.ID) from RESOURCES R where R.IS_DELETED = 'N' and R.CREATOR = WSA.USER_ID and exists (select 1 from RESOURCE_RELATION RR where RR.IS_DELETED = 'N' and R.ID = RR.RESOURCE_ID and RR.RELATION_ID = WSA.WORKSHOP_ID)) RESOURCE_NUM
+		from WORKSHOP_AUTHORIZE WSA
+		join BASE_USER_VIEW BUV
+		on WSA.USER_ID = BUV.ID 
+		where WSA.IS_DELETED = 'N' 
+		<if test="workshopId != null and workshopId != ''">
+			and	WSA.WORKSHOP_ID = #{workshopId, jdbcType=VARCHAR}
+		</if>
+		<if test="role != null and role != ''">
+			and	WSA.ROLE = #{role, jdbcType=VARCHAR}
+		</if>
+		<if test="state != null and state != ''">
+			and WSA.STATE = #{state}
+		</if>
+	</select>
+</mapper>

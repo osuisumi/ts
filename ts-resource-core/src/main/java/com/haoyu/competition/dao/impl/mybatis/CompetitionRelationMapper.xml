@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.competition.dao.impl.mybatis.CompetitionRelationMapper">
+	<resultMap type="com.haoyu.competition.entity.CompetitionRelation" id="CompetitionRelationResult">
+		<id column="ID" property="title" jdbcType="VARCHAR" />
+		<result column="COMPETITION_ID" property="title" jdbcType="VARCHAR" />
+		<result column="RELATION_ID" property="title" jdbcType="VARCHAR" />
+		<result column="RELATION_TYPE" property="title" jdbcType="VARCHAR" />
+		<result column="CREATOR" property="title" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="title" jdbcType="VARCHAR" />
+		<result column="UPDATEDBY" property="title" jdbcType="VARCHAR" />
+		<result column="UPDATE_TIME" property="title" jdbcType="VARCHAR" />
+		<result column="VERSION" property="title" jdbcType="VARCHAR" />
+		<result column="IS_DELETED" property="title" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="baseCommend">
+		CR.ID,CR.COMPETITION_ID,CR.RELATION_ID,CR.RELATION_TYPE
+	</sql>
+
+	<select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="CompetitionRelationResult">
+		select
+		<include refid="baseCommend"></include>
+		from COMPETITION_RELATION CR
+		where IS_DELETED = 'N'
+		<if test="id != null">
+			CR.ID = #{id}
+		</if>
+	</select>
+
+	<select id="select" parameterType="com.haoyu.competition.entity.CompetitionRelation" resultMap="CompetitionRelationResult">
+		select
+		<include refid="baseCommend"></include>
+		from COMPETITION_RELATION CR
+		where IS_DELETED = 'N'
+	</select>
+
+
+
+	<insert id="insert" parameterType="com.haoyu.competition.entity.CompetitionRelation">
+		insert into COMPETITION_RELATION
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id!=null">
+				ID,
+			</if>
+			<if test="competitionId != null">
+				COMPETITION_ID,
+			</if>
+			<if test="relation != null and relation.id != null">
+				RELATION_ID,
+			</if>
+			<if test="relation != null and relation.type != null">
+				RELATION_TYPE,
+			</if>
+			<if test="creator!=null and creator.id!=null">
+				CREATOR,
+			</if>
+			<if test="updatedby!=null">
+				UPDATEDBY,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+			<if test="version != null">
+				VERSION
+			</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id!=null">
+				#{id},
+			</if>
+			<if test="competitionId != null">
+				#{competitionId},
+			</if>
+			<if test="relation != null and relation.id != null">
+				#{relation.id},
+			</if>
+			<if test="relation != null and relation.type != null">
+				#{relation.type},
+			</if>
+			<if test="creator!=null and creator.id!=null">
+				#{creator.id},
+			</if>
+			<if test="updatedby!=null">
+				#{updatedby},
+			</if>
+			<if test="createTime != null">
+				#{createTime},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted},
+			</if>
+			<if test="version != null">
+				#{version}
+			</if>
+
+		</trim>
+	</insert>
+
+</mapper>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.menu.dao.impl.mybatis.MenuMapper">
+	<resultMap id="MenuResultMap" type="com.haoyu.sip.auth.entity.AuthMenu">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" />
+		<result column="ORDER_NO" property="orderNo" jdbcType="INTEGER" />
+		<result column="RELATION_ID" property="relationId" jdbcType="VARCHAR" />
+		<association property="permission" javaType="com.haoyu.sip.auth.entity.AuthPermission">
+			<id column="PERMISSION_ID" property="id" />
+			<result column="PERMISSION_NAME" property="name" />
+			<result column="ACTION" property="action" />
+			<result column="ACTION_URI" property="actionURI" />
+			<association property="resource" javaType="com.haoyu.sip.auth.entity.AuthResource">
+				<id column="RESOURCE_ID" property="id" />
+				<result column="RESOURCE_NAME" property="name" />
+				<result column="RESOURCE_CODE" property="code" />
+			</association>
+		</association>
+		<association property="parent" javaType="com.haoyu.sip.auth.entity.AuthMenu">
+			<id column="PARENT_ID" property="id" />
+			<result column="PARENT_NAME" property="name" jdbcType="VARCHAR" />
+		</association>
+	</resultMap>
+	<sql id="Base_Column_List">
+		M.ID, M.NAME,M.ORDER_NO,M.RELATION_ID,P.ID PERMISSION_ID,P.NAME PERMISSION_NAME,P.ACTION ,P.ACTION_URI,
+		R.ID RESOURCE_ID,R.CODE RESOURCE_CODE,R.NAME RESOURCE_NAME,MP.ID PARENT_ID,MP.NAME PARENT_NAME
+	</sql>
+	<select id="select" resultMap="MenuResultMap" parameterType="map">
+		select
+		<include refid="Base_Column_List" />
+		from AUTH_MENU M
+		left join AUTH_PERMISSION P
+		on M.PERMISSION_ID = P.ID
+		and P.IS_DELETED='N'
+		left join AUTH_RESOURCE R
+		on P.RESOURCE_ID = R.ID
+		and R.IS_DELETED='N'
+		left join AUTH_MENU MP
+		on MP.ID = M.PARENT_ID
+		and MP.IS_DELETED='N'
+		where M.IS_DELETED='N'
+		<if test="name!=null and name!=''">
+			and M.NAME LIKE CONCAT('%',#{name,jdbcType=VARCHAR},'%' )
+		</if>
+		<if test="relationId!=null and relationId!=''">
+			and M.RELATION_ID=#{relationId,jdbcType=VARCHAR}
+		</if>
+		<choose>
+			<when test="parent!=null and parent!=''">
+				and M.PARENT_ID=#{parent,jdbcType=VARCHAR}
+			</when>
+			<when test="parentIsNull != null and parentIsNull != ''">
+				and (M.PARENT_ID IS NULL or M.PARENT_ID = '')
+			</when>
+		</choose>
+		<if test="roles!=null and roles.size()>0">
+			and EXISTS(select 1 from AUTH_ROLE_MENU MR WHERE MR.MENU_ID=M.ID
+			AND MR.ROLE_ID IN
+			<foreach collection="roles" item="role" separator="," open="(" close=")">
+				#{role.id}
+			</foreach>
+			)
+		</if>
+	</select>
+
+	<select id="count" parameterType="map" resultType="int">
+		select count(ID) from AUTH_MENU M
+		where IS_DELETED = 'N'
+		<choose>
+			<when test="parent!=null and parent.id!=null">
+				and M.PARENT_ID=#{parent.id,jdbcType=VARCHAR}
+			</when>
+			<when test="parentIsNull != null and parentIsNull != ''">
+				and (M.PARENT_ID IS NULL or M.PARENT_ID = '')
+			</when>
+		</choose>
+	</select>
+
+	<insert id="insert" parameterType="com.haoyu.sip.auth.entity.AuthMenu">
+		insert into AUTH_MENU(ID,NAME,PERMISSION_ID,ORDER_NO,RELATION_ID,PARENT_ID,CREATOR,CREATE_TIME,IS_DELETED,VERSION)
+		values(#{id,jdbcType=VARCHAR},#{name,jdbcType=VARCHAR},#{permission.id,jdbcType=VARCHAR},
+		(select count(ID) from AUTH_MENU M
+		where IS_DELETED = 'N'
+		<choose>
+			<when test="parent!=null and parent.id!=null and parent.id != ''">
+				and M.PARENT_ID=#{parent.id,jdbcType=VARCHAR}
+			</when>
+			<otherwise>
+				and (M.PARENT_ID IS NULL or M.PARENT_ID = '')
+			</otherwise>
+		</choose>)+1,
+		#{relationId,jdbcType=VARCHAR},
+		<choose>
+			<when test="parent!=null and parent.id!=null">
+				#{parent.id,jdbcType=VARCHAR}
+			</when>
+			<otherwise>
+				null
+			</otherwise>
+		</choose>
+		,#{creator.id,jdbcType=VARCHAR},#{createTime,jdbcType=BIGINT},#{isDeleted,jdbcType=VARCHAR},#{version,jdbcType=DECIMAL})
+	</insert>
+
+	<delete id="deleteByPhysics" parameterType="map">
+		delete from AUTH_MENU
+		where ID in
+		<foreach collection="ids" separator="," open="(" close=")" item="item">
+			#{item}
+		</foreach>
+		or PARENT_ID in
+		<foreach collection="ids" separator="," open="(" close=")" item="item">
+			#{item}
+		</foreach>
+	</delete>
+</mapper>

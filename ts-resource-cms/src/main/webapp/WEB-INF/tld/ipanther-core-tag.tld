@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib>
+	<tlib-version>1.1.2</tlib-version>
+	<jsp-version>2.0</jsp-version>
+	<short-name>ipanther-core</short-name>
+	<uri>http://ipanther-core.haoyi.com</uri>
+	<description>IPanther Core Function lib</description>
+	<function>
+		<name>getProperty</name>
+		<function-class>com.haoyu.sip.core.utils.PropertiesLoader</function-class>
+		<function-signature>java.lang.String get(java.lang.String)</function-signature>
+	</function>
+	<function>
+		<!--EL页面调用名字-->
+		<name>getCurrentDate</name>
+		<!--指定标签的处理类，指定了标签由哪个Java类来处理。-->
+		<function-class>com.haoyi.ipanther.core.utils.PrettyTimeUtils</function-class>
+		<!--指定EL页面调用名字中实际调用的方法.指定处理类的实际方法.参数和回调函数要写完整路径-->
+		<function-signature>java.lang.Date getCurrentDate()</function-signature>
+	</function>
+	<function>
+		<!--EL页面调用名字-->
+		<name>prettyTime</name>
+		<!--指定标签的处理类，指定了标签由哪个Java类来处理。-->
+		<function-class>com.haoyi.ipanther.core.utils.PrettyTimeUtils</function-class>
+		<!--指定EL页面调用名字中实际调用的方法.指定处理类的实际方法.参数和回调函数要写完整路径-->
+		<function-signature>java.lang.String prettyTime(java.util.Date,java.lang.String)</function-signature>
+	</function>
+	<function>
+		<name>uuid2</name>
+		<function-class>com.haoyi.ipanther.core.utils.Identities</function-class>
+		<function-signature>java.lang.String uuid2()</function-signature>
+	</function>	
+	<function>
+		<name>getJsonMapValue</name>
+		<function-class>com.haoyu.sip.core.mapper.JsonMapper</function-class>
+		<function-signature>java.lang.String getJsonMapValue(java.lang.String,java.lang.String)</function-signature>
+	</function>
+	<function>
+		<name>encryptMode</name>
+		<function-class>com.haoyi.ipanther.core.security.utils.ThreeDes</function-class>
+		<function-signature>java.lang.String encryptMode(java.lang.String)</function-signature>
+	</function>		
+	<function>
+		<name>replaceByRegex</name>
+		<function-class>com.haoyi.ipanther.core.utils.StringUtils</function-class>
+		<function-signature>java.lang.String replaceByRegex(java.lang.String,java.lang.String)</function-signature>
+	</function>
+	<function>
+		<name>replaceBlank</name>
+		<function-class>com.haoyi.ipanther.core.utils.StringUtils</function-class>
+		<function-signature>java.lang.String replaceBlank(java.lang.String)</function-signature>
+	</function>
+</taglib>

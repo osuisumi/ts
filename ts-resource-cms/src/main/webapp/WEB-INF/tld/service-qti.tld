@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib>
+	<tlib-version>1.1.2</tlib-version>
+	<jsp-version>2.0</jsp-version>
+	<short-name>service-qti</short-name>
+	<uri>http://service-qti.haoyi.com</uri>
+	<description>Service QTI Function lib</description>
+	<function>
+		<!--EL页面调用名字-->
+		<name>loadChoiceQuestion</name>
+		<!--指定标签的处理类，指定了标签由哪个Java类来处理。-->
+		<function-class>com.haoyi.ims.qti.entity.ChoiceQuestion</function-class>
+		<!--指定EL页面调用名字中实际调用的方法.指定处理类的实际方法.参数和回调函数要写完整路径-->
+		<function-signature>com.haoyi.ims.qti.entity.ChoiceQuestion load(java.lang.String)</function-signature>
+	</function>
+	<function>
+		<!--EL页面调用名字-->
+		<name>isCorrect</name>
+		<!--指定标签的处理类，指定了标签由哪个Java类来处理。-->
+		<function-class>com.haoyi.ims.qti.entity.ChoiceQuestion</function-class>
+		<!--指定EL页面调用名字中实际调用的方法.指定处理类的实际方法.参数和回调函数要写完整路径-->
+		<function-signature>boolean isCorrect(java.util.List,java.lang.String)</function-signature>
+	</function>
+	<function>
+		<!--EL页面调用名字-->
+		<name>loadEasySayQuestion</name>
+		<!--指定标签的处理类，指定了标签由哪个Java类来处理。-->
+		<function-class>com.haoyi.ims.qti.entity.EasySayQuestion</function-class>
+		<!--指定EL页面调用名字中实际调用的方法.指定处理类的实际方法.参数和回调函数要写完整路径-->
+		<function-signature>com.haoyi.ims.qti.entity.EasySayQuestion load(java.lang.String)</function-signature>
+	</function>
+	<function>
+		<!--EL页面调用名字-->
+		<name>loadUploadQuestion</name>
+		<!--指定标签的处理类，指定了标签由哪个Java类来处理。-->
+		<function-class>com.haoyi.ims.qti.entity.UploadQuestion</function-class>
+		<!--指定EL页面调用名字中实际调用的方法.指定处理类的实际方法.参数和回调函数要写完整路径-->
+		<function-signature>com.haoyi.ims.qti.entity.UploadQuestion load(java.lang.String)</function-signature>
+	</function>
+</taglib>

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.board.dao.impl.mybatis.BoardMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.board.entity.Board">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" />
+		<result column="SUMMARY" property="summary" jdbcType="VARCHAR" />
+		<result column="SORT_NO" property="sortNo" jdbcType="VARCHAR" />
+		<result column="IMAGE_URL" property="imageUrl" jdbcType="VARCHAR" />
+		<result property="createTime" column="CREATE_TIME" jdbcType="INTEGER" />	
+		<result property="updateTime" column="UPDATE_TIME" jdbcType="INTEGER" />
+		<result property="creator.id" column="CREATOR"  jdbcType="VARCHAR" />
+		<result property="updatedby.id" column="UPDATEDBY"  jdbcType="VARCHAR" />
+		<result property="isDeleted" column="IS_DELETED"  jdbcType="VARCHAR" />	
+		<result property="version" column="VERSION"  jdbcType="INTEGER" />
+		<collection property="boardAuthorizes" ofType="com.haoyu.board.entity.BoardAuthorize">
+			<id property="id" column="BOARD_AUTHORIZE_ID" jdbcType="VARCHAR" />
+			<result property="user.id" column="USER_ID" jdbcType="VARCHAR"/>
+			<result property="user.realName" column="USER_REAL_NAME" jdbcType="VARCHAR"/>
+		</collection>
+	</resultMap>
+	<resultMap type="com.haoyu.board.entity.ActiveUser" id="activeUserResultMap">
+		<id column="ID" property="id" jdbcType="VARCHAR"/>
+		<result column="REAL_NAME" property="realName" jdbcType="VARCHAR" />
+		<result column="AVATAR" property="avatar" jdbcType="VARCHAR"/>
+		<result column="DISCUSSION_COUNT" property="discussionCount" jdbcType="INTEGER"/>
+	</resultMap>
+	<sql id="selectColumnSQL">
+
+	</sql> 
+
+	<select id="select" parameterType="map" resultMap="BaseResultMap">
+		select B.ID,B.NAME,B.SUMMARY,B.SORT_NO,B.CREATE_TIME
+		from BOARD B
+		where B.IS_DELETED = 'N'
+		<if test="name != null and name !='' ">
+			and B.name like '%${name}%'
+		</if>
+	</select>
+	
+	<select id="selectByparameter" parameterType="java.util.Map" resultMap="BaseResultMap">
+		select B.ID,B.NAME,B.SUMMARY,B.SORT_NO,B.CREATE_TIME
+		from BOARD B
+		where B.IS_DELETED = 'N'
+		<if test="name != null and name !='' ">
+			and B.name like '%${name}%'
+		</if>
+		<if test="ids != null">
+			and B.ID in
+			<foreach collection="ids" open="(" close=")" item="id" separator=",">
+				#{id,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+	</select>
+
+	<!-- <select id="selectByPrimaryKey" parameterType="string" resultMap="BaseResultMap"> select B.ID,B.NAME,B.SUMMARY,B.SORT_NO , D.ID DISCUSSION_ID,D.TITLE DISCUSSION_TITLE,D.CONTENT DISCUSSION_CONTENT,D.CREATE_TIME DISCUSSION_CREATE_TIME , DR.ID DISCUSSION_RELATION_ID,DR.PARTICIPATE_NUM,DR.BROWSE_NUM,DR.REPLY_NUM, DR.START_TIME, DR.END_TIME,DR.IS_TOP,DR.IS_ESSENCE,DR.RELATION_ID,DR.LAST_POST_ID , DP.CONTENT LAST_POST_CONTENT,DP.TARGET_ID LAST_POST_TARGET_ID,DP.CREATE_TIME LAST_POST_CREATE_TIME , BUV1.ID DISCUSSION_CREATOR_ID,BUV1.REAL_NAME DISCUSSION_CREATOR_REAL_NAME,BUV1.AVATAR DISCUSSION_CREATOR_AVATAR , BUV2.ID LAST_POST_CREATOR_ID,BUV2.REAL_NAME LAST_POST_CREATOR_REAL_NAME from BOARD B join DISCUSSION_RELATION DR on DR.RELATION_ID = B.ID and DR.IS_DELETED = 'N' join DISCUSSION D on DR.DISCUSSION_ID = D.ID and D.IS_DELETED = 'N' left join DISCUSSION_POST DP on DR.LAST_POST_ID = DP.ID and DP.IS_DELETED = 'N' left join BASE_USER_VIEW BUV1 on D.CREATOR = BUV1.ID left join BASE_USER_VIEW 
+		BUV2 on DP.CREATOR = BUV2.ID where B.IS_DELETED = 'N' and B.ID=#{id,jdbcType=VARCHAR} </select> -->
+
+	<select id="selectByPrimaryKey" parameterType="string" resultMap="BaseResultMap">
+		select B.ID,B.NAME,B.SUMMARY,B.SORT_NO,B.IMAGE_URL,
+		BA.ID BOARD_AUTHORIZE_ID ,BA.USER_ID USER_ID, TU.REAL_NAME USER_REAL_NAME
+		from BOARD B
+		left join BOARD_AUTHORIZE BA
+		on BA.BOARD_ID = B.ID
+		and BA.IS_DELETED = 'N'
+		left join TS_USER TU
+		on BA.USER_ID = TU.ID
+		and TU.IS_DELETED = 'N'
+		where B.IS_DELETED = 'N'
+		and B.ID=#{id,jdbcType=VARCHAR}
+	</select>
+
+	<select id="listActiveUser" parameterType="java.util.Map" resultMap="activeUserResultMap">
+		SELECT
+		BUV. ID,
+		BUV.REAL_NAME,
+		BUV.AVATAR,
+		COUNT(BUV.ID) DISCUSSION_COUNT
+		FROM
+		BASE_USER_VIEW BUV
+		JOIN DISCUSSION D ON BUV. ID = D.CREATOR
+		JOIN DISCUSSION_RELATION dr ON D.ID = dr.discussion_id
+		AND dr.relation_id = #{relationId,jdbcType=VARCHAR}
+		GROUP BY
+		BUV. ID,
+		BUV.REAL_NAME,
+		BUV.AVATAR
+	</select>
+
+	<insert id="insert" parameterType="com.haoyu.board.entity.Board">
+		insert into BOARD
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="name != null">
+				NAME,
+			</if>
+			<if test="summary != null">
+				SUMMARY,
+			</if>
+			<if test="sortNo != null">
+				SORT_NO,
+			</if>
+			<if test="imageUrl != null">
+				IMAGE_URL,
+			</if>
+			<if test="creator!=null and creator.id != null">
+				CREATOR,
+			</if>
+			<if test="updatedby!=null and updatedby.id != null">
+				UPDATEDBY,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+			<if test="version != null">
+				VERSION
+			</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id},
+			</if>
+			<if test="name != null">
+				#{name},
+			</if>
+			<if test="summary != null">
+				#{summary},
+			</if>
+			<if test="sortNo != null">
+				#{sortNo},
+			</if>
+			<if test="imageUrl != null">
+				#{imageUrl,jdbcType=VARCHAR},
+			</if>
+			<if test="creator!=null and creator.id != null">
+				#{creator.id},
+			</if>
+			<if test="updatedby!=null and updatedby.id != null">
+				#{updatedby.id},
+			</if>
+			<if test="createTime != null">
+				#{createTime},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted},
+			</if>
+			<if test="version != null">
+				#{version}
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.board.entity.Board">
+		update BOARD
+		<set>
+			<if test="name != null">
+				NAME = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="summary != null">
+				SUMMARY = #{summary,jdbcType=VARCHAR},
+			</if>
+			<if test="sortNo != null">
+				SORT_NO = #{sortNo,jdbcType=VARCHAR},
+			</if>
+			<if test="imageUrl != null">
+				IMAGE_URL = #{imageUrl,jdbcType=VARCHAR},
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null and updateTime > 0">
+				UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<update id="deleteByLogic" parameterType="com.haoyu.board.entity.Board">
+		update BOARD
+		set IS_DELETED = 'Y', UPDATE_TIME = #{updateTime,jdbcType=INTEGER}
+		<if test="updatedby != null">
+			,UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR}
+		</if>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<update id="deleteByIds" parameterType="map">
+		update BOARD
+		set IS_DELETED = 'Y', UPDATE_TIME = #{entity.updateTime,jdbcType=INTEGER}
+		<if test="updatedby != null">
+			,UPDATEDBY = #{entity.id,jdbcType=VARCHAR}
+		</if>
+		where ID in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+	
+</mapper>

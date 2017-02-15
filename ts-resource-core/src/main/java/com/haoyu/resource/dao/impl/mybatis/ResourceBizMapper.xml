@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.resource.dao.impl.mybatis.ResourceBizMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.resource.entity.Resources">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="TITLE" property="title" jdbcType="VARCHAR" />
+		<result column="SUMMARY" property="summary" jdbcType="VARCHAR" />
+		<result column="TYPE" property="type" jdbcType="VARCHAR" />
+		<result column="STATE" property="state" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="INTEGER" />
+		<result column="CREATOR" property="creator.id" jdbcType="VARCHAR" />
+		<result column="REAL_NAME" property="creator.realName" jdbcType="VARCHAR" />
+		<result column="AVATAR" property="creator.avatar" jdbcType="VARCHAR" />
+
+		<result column="STAGE" property="resourceExtend.stage" jdbcType="VARCHAR" />
+		<result column="SUBJECT" property="resourceExtend.subject" jdbcType="VARCHAR" />
+		<result column="GRADE" property="resourceExtend.grade" jdbcType="VARCHAR" />
+		<result column="TB_VERSION" property="resourceExtend.tbVersion" jdbcType="VARCHAR" />
+		<result column="EXTEND_TYPE" property="resourceExtend.type" jdbcType="VARCHAR" />
+		<result column="POST" property="resourceExtend.post" jdbcType="VARCHAR" />
+		<result column="PREVIEW_URL" property="resourceExtend.previewUrl" jdbcType="VARCHAR" />
+		<result column="CHAPTER" property="resourceExtend.chapter" jdbcType="VARCHAR" />
+		<result column="SECTION" property="resourceExtend.section" jdbcType="VARCHAR" />
+		<result column="EVALUATE_RESULT" property="resourceExtend.evaluateResult" jdbcType="VARCHAR" />
+		<result column="RESOURCE_ID" property="resourceExtend.resourceId" jdbcType="VARCHAR" />
+		<result column="IS_ORIGINAL" property="resourceExtend.isOriginal" jdbcType="VARCHAR" />
+		<result column="PRIZE" property="resourceExtend.prize" jdbcType="VARCHAR"></result>
+		<result column="IS_HIDDEN" property="resourceExtend.isHidden" jdbcType="VARCHAR"></result>
+
+
+		<collection property="resourceRelations" ofType="com.haoyu.tip.resource.entity.ResourceRelation">
+			<id property="id" column="RESOURCE_RELATION_ID" />
+			<result property="browseNum" column="BROWSE_NUM" jdbcType="INTEGER" />
+			<result property="downloadNum" column="DOWNLOAD_NUM" jdbcType="INTEGER" />
+			<result property="fileNum" column="FILE_NUM" jdbcType="DECIMAL" />
+			<result property="replyNum" column="REPLY_NUM" jdbcType="DECIMAL" />
+			<result property="collectNum" column="COLLECT_NUM" jdbcType="INTEGER" />
+			<result property="supportNum" column="SUPPORT_NUM" jdbcType="INTEGER" />
+			<result property="voteNum" column="VOTE_NUM" jdbcType="INTEGER"/>
+			<result property="relation.id" column="RELATION_ID" jdbcType="VARCHAR" />
+			<result property="relation.type" column="RELATION_TYPE" jdbcType="VARCHAR" />
+		</collection>
+	</resultMap>
+	<resultMap type="com.haoyu.resource.result.ResourceUserInfo" id="ResourceUserInfo">
+		<result property="resourceNum" column="RESOURCE_NUM" jdbcType="DECIMAL" />
+		<result property="user.id" column="CREATOR" jdbcType="VARCHAR" />
+		<result property="user.realName" column="REAL_NAME" jdbcType="VARCHAR" />
+		<result property="user.avatar" column="AVATAR" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap type="com.haoyu.zone.entity.ZoneInfo" id="zoneUserInfo">
+		<result property="discoveryNum" column="DISCOVERY_NUM" jdbcType="INTEGER" />
+		<result property="myUploadDiscoveryNum" column="MY_UPLOAD_DISCOVERY_NUM" jdbcType="INTEGER" />
+		<result property="myFollowDiscoveryNum" column="MY_FOLLOW_DISCOVERY_NUM" jdbcType="INTEGER" />
+		<result property="resourceNum" column="RESOURCE_NUM" jdbcType="INTEGER" />
+		<result property="myUploadResourceNum" column="MY_UPLOAD_RESOURCE_NUM" jdbcType="INTEGER" />
+		<result property="myFollowResourceNum" column="MY_FOLLOW_RESOURCE_NUM" jdbcType="INTEGER" />
+		<result property="myCompetitionNum" column="MY_COMPETITION_NUM" jdbcType="INTEGER" />
+		<result property="myDiscussionNum" column="MY_DISCUSSION_NUM" jdbcType="INTEGER" />
+		
+	</resultMap>
+	<sql id="selectColumnSQL">
+		select R.ID, R.TITLE, R.SUMMARY, R.CREATOR, R.TYPE, R.CREATE_TIME, R.STATE,
+		RR.ID RESOURCE_RELATION_ID,RR.RELATION_ID RELATION_ID, RR.BROWSE_NUM, RR.DOWNLOAD_NUM, RR.FILE_NUM, RR.TYPE RELATION_TYPE, RR.REPLY_NUM,RR.COLLECT_NUM,RR.SUPPORT_NUM,RR.VOTE_NUM,
+		BUV.REAL_NAME,BUV.AVATAR,
+		RE.STAGE, RE.SUBJECT, RE.GRADE, RE.TB_VERSION, RE.TYPE EXTEND_TYPE, RE.POST, RE.EVALUATE_RESULT, RE.SECTION, RE.CHAPTER,RE.PREVIEW_URL,RE.PRIZE,RE.IS_HIDDEN
+		from RESOURCES R
+		join RESOURCE_RELATION RR
+		on R.ID = RR.RESOURCE_ID
+		and RR.IS_DELETED = 'N'
+		join BASE_USER_VIEW BUV
+		on BUV.ID = R.CREATOR
+		join RESOURCE_EXTEND RE
+		on RE.RESOURCE_ID = R.ID
+	</sql>
+	<select id="select" parameterType="map" resultMap="BaseResultMap">
+		<include refid="selectColumnSQL" />
+		where R.IS_DELETED = 'N'
+		<if test="relationId != null and relationId != ''">
+			and exists (select 1 from RESOURCE_RELATION where RESOURCE_ID = R.ID and IS_DELETED = 'N' and RELATION_ID = #{relationId})
+		</if>
+		<if test="stage != null and stage != ''">
+			and RE.STAGE = #{stage}
+		</if>
+		<if test="subject != null and subject != ''">
+			and RE.SUBJECT = #{subject}
+		</if>
+		<if test="grade != null and grade != ''">
+			and RE.GRADE = #{grade}
+		</if>
+		<if test="tbVersion != null and tbVersion != ''">
+			and RE.TB_VERSION = #{tbVersion}
+		</if>
+		<if test="extendType != null and extendType != ''">
+			and RE.TYPE = #{extendType}
+		</if>
+		<if test="post != null and post != ''">
+			and RE.POST = #{post}
+		</if>
+		<if test="chapter != null and chapter != ''">
+			and RE.CHAPTER = #{chapter}
+		</if>
+		<if test="section != null and section != ''">
+			and RE.SECTION = #{section}
+		</if>
+		<if test="state!=null and state!=''">
+			and R.STATE=#{state}
+		</if>
+		<if test="type!=null and type !=''">
+			and R.TYPE=#{type}
+		</if>
+		<if test="creator!=null and creator!=''">
+			and R.CREATOR=#{creator}
+		</if>
+		<if test="typeNotEquils != null and typeNotEquils != ''">
+			and R.TYPE != #{typeNotEquils}
+		</if>
+		<if test="followCreator != null and followCreator!=''">
+			and exists (select 1 from FOLLOW F where IS_DELETED = 'N' and FOLLOWED_ID = R.ID and CREATOR = #{followCreator})
+		</if>
+		<if test="creatorOrFollowCreator != null and creatorOrFollowCreator!=''">
+			and (R.CREATOR = #{creatorOrFollowCreator} or exists (select 1 from FOLLOW F where IS_DELETED = 'N' and FOLLOWED_ID = R.ID and F.CREATOR = #{creatorOrFollowCreator}))
+		</if>
+		<if test="idNotEquils != null and idNotEquils != ''">
+			and R.ID != #{idNotEquils, jdbcType=VARCHAR}
+		</if>
+		<if test="title != null and title != ''">
+			and R.TITLE like '%${title}%'
+		</if>
+		<if test="minCreateTime != null and minCreateTime != ''">
+			and R.CREATE_TIME <![CDATA[>]]> #{minCreateTime,jdbcType=INTEGER}
+		</if>
+		<if test="maxCreateTime != null and maxCreateTime != ''">
+			and R.CREATE_TIME <![CDATA[<]]> #{maxCreateTime,jdbcType=INTEGER}
+		</if>
+		<if test="stateNotEquils != null and stateNotEquils != ''">
+			and R.STATE != #{stateNotEquils, jdbcType=VARCHAR}
+		</if>
+		<if test="isHidden != null and isHidden != ''">
+			<if test="isHidden == 'N'.toString()">
+				and (RE.IS_HIDDEN is null or RE.IS_HIDDEN != 'Y')
+			</if>
+		</if>
+		<if test="ids != null and ids.size > 0">
+			and R.ID in 
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="tag != null and tag != ''">
+			and exists(select 1 from TAG_RELATION TR where TR.RELATION_ID = R.ID and TR.TAG_ID = #{tag,jdbcType=VARCHAR})
+		</if>
+	</select>
+	<select id="selectByPrimaryKey" parameterType="string" resultMap="BaseResultMap">
+		<include refid="selectColumnSQL" />
+		where R.ID = #{id, jdbcType=VARCHAR}
+		and R.IS_DELETED = 'N'
+	</select>
+	<insert id="insertResourceExtend" parameterType="com.haoyu.resource.entity.ResourceExtend">
+		insert into RESOURCE_EXTEND(RESOURCE_ID, EVALUATE_RESULT, IS_ORIGINAL, STAGE, SUBJECT, TB_VERSION, GRADE, CHAPTER, SECTION, TYPE, POST, PREVIEW_URL, IS_HIDDEN)
+		values(#{resourceId, jdbcType=VARCHAR}, #{evaluateResult, jdbcType=DECIMAL}, #{isOriginal, jdbcType=CHAR}, #{stage, jdbcType=VARCHAR}, #{subject, jdbcType=VARCHAR},
+		#{tbVersion, jdbcType=VARCHAR}, #{grade, jdbcType=VARCHAR}, #{chapter, jdbcType=VARCHAR}, #{section, jdbcType=VARCHAR}, #{type, jdbcType=VARCHAR},
+		#{post, jdbcType=VARCHAR}, #{previewUrl, jdbcType=VARCHAR}, #{isHidden, jdbcType=VARCHAR})
+	</insert>
+
+	<select id="selectResourceUserInfo" parameterType="map" resultMap="ResourceUserInfo">
+		select TEMP.CREATOR, TEMP.RESOURCE_NUM,
+		BUV.REAL_NAME, BUV.AVATAR
+		from
+		(select R.CREATOR, COUNT(R.ID) RESOURCE_NUM
+		from RESOURCES R join RESOURCE_RELATION RR on R.ID = RR.RESOURCE_ID
+		<if test="relationId != null and relationId != ''">
+			and RR.RELATION_ID = #{relationId}
+		</if>
+		where R.IS_DELETED = 'N'
+		<if test="type != null and type != ''">
+			and R.TYPE = #{type}
+		</if>
+		<if test="typeNotEquils != null and typeNotEquils != ''">
+			and R.TYPE != #{typeNotEquils}
+		</if>
+		<if test = "state != null and state != ''">
+			and R.STATE = #{state}
+		</if>
+		<if test = "stateNotEquils != null and stateNotEquils != ''">
+			and R.STATE != #{stateNotEquils}
+		</if>
+		group by R.CREATOR) TEMP
+		join BASE_USER_VIEW BUV
+		on BUV.ID = TEMP.CREATOR
+	</select>
+	<update id="updateResourceExtend" parameterType="com.haoyu.resource.entity.ResourceExtend">
+		update RESOURCE_EXTEND RE
+		<set>
+			<if test="evaluateResult > 0">
+				EVALUATE_RESULT = (select avg(EVALUATE_SCORE) from COMMENTS where IS_DELETED = 'N' and RELATION_ID = RE.RESOURCE_ID),
+			</if>
+			<if test="stage != null and stage != ''">
+				STAGE = #{stage},
+			</if>
+			<if test="subject != null and subject != ''">
+				SUBJECT = #{subject},
+			</if>
+			<if test="grade != null and grade != ''">
+				GRADE = #{grade},
+			</if>
+			<if test="tbVersion != null and tbVersion != ''">
+				TB_VERSION = #{tbVersion},
+			</if>
+			<if test="post != null and post != ''">
+				POST = #{post},
+			</if>
+			<if test="chapter != null and chapter != ''">
+				CHAPTER = #{chapter},
+			</if>
+			<if test="section != null and section != ''">
+				SECTION = #{section},
+			</if>
+			<if test="isOriginal != null and isOriginal != ''">
+				IS_ORIGINAL = #{isOriginal},
+			</if>
+			<if test="type != null and type != ''">
+				TYPE = #{type},
+			</if>
+			<if test="isHidden != null and isHidden != ''">
+				IS_HIDDEN = #{isHidden},
+			</if>
+			<if test="previewUrl != null and previewUrl != ''">
+				PREVIEW_URL = #{previewUrl},
+			</if>
+			VERSION = VERSION + 1,
+		</set>
+		where RE.RESOURCE_ID = #{resourceId, jdbcType=VARCHAR}
+	</update>
+	<update id="updateResourceExtendByIds" parameterType="map">
+		update RESOURCE_EXTEND RE
+		<set>
+			<if test="entity != null and entity.prize != null">
+				PRIZE = #{entity.prize,jdbcType=VARCHAR},
+			</if>
+			VERSION = VERSION + 1,
+		</set>
+		where RE.RESOURCE_ID in (
+		<foreach collection="ids" item="item" separator=",">
+			#{item,jdbcType=VARCHAR}
+		</foreach>
+		)
+	</update>
+	<select id="selectRankResource" parameterType="map" resultMap="BaseResultMap">
+		select R.ID, R.TITLE, R.SUMMARY, R.CREATOR, R.TYPE, R.CREATE_TIME,
+		RR.ID RESOURCE_RELATION_ID, RR.BROWSE_NUM, RR.FILE_NUM, RR.TYPE RELATION_TYPE, RR.REPLY_NUM,RR.COLLECT_NUM,RR.SUPPORT_NUM,
+		BUV.REAL_NAME,
+		RE.STAGE, RE.SUBJECT, RE.GRADE, RE.TB_VERSION, RE.TYPE EXTEND_TYPE, RE.POST, RE.EVALUATE_RESULT, RE.SECTION, RE.CHAPTER,RE.PREVIEW_URL,
+		(select count(FDU.ID) from FILE_DOWNLOAD_USER FDU where 
+		<!-- FDU.CREATE_TIME <![CDATA[>=]]> #{weekBeginDate, jdbcType=DECIMAL} and  -->
+		FDU.IS_DELETED = 'N' and exists (select 1 from FILE_RELATION FR where FR.FILE_ID = FDU.FILE_ID and FR.IS_DELETED = 'N'
+		and FR.RELATION_ID = R.ID)) DOWNLOAD_NUM
+		from RESOURCES R
+		join RESOURCE_RELATION RR
+		on R.ID = RR.RESOURCE_ID
+		and RR.IS_DELETED = 'N'
+		join BASE_USER_VIEW BUV
+		on BUV.ID = R.CREATOR
+		join RESOURCE_EXTEND RE
+		on RE.RESOURCE_ID = R.ID
+		where R.IS_DELETED = 'N'
+		<!-- <if test="type!=null and type !=''">
+			and R.TYPE=#{type}
+		</if>
+		<if test="typeNotEquils != null and typeNotEquils != ''">
+			and R.TYPE != #{typeNotEquils}
+		</if>
+		<if test="stateNotEquils != null and stateNotEquils != ''">
+			and R.STATE != #{stateNotEquils}
+		</if>
+		<if test="stateNotEquils != null and stateNotEquils != ''">
+			and R.STATE != #{stateNotEquils, jdbcType=VARCHAR}
+		</if>
+		<if test="isHidden != null and isHidden != ''">
+			<if test="isHidden == 'N'.toString()">
+				and (RE.IS_HIDDEN is null or RE.IS_HIDDEN != 'Y')
+			</if>
+		</if> -->
+	</select>
+
+	<select id="zoneInfo" parameterType="map" resultMap="zoneUserInfo">
+		select ID,
+		(select count(id) discoveryNum from RESOURCES R
+		where type = 'discovery' and IS_DELETED ='N'
+		and (R.CREATOR = BUV.ID or exists (select 1 from FOLLOW F where IS_DELETED = 'N' and FOLLOWED_ID = R.ID and F.CREATOR = BUV.ID))
+		) DISCOVERY_NUM
+		,
+		(select count(id) myUploadDiscoveryNum from RESOURCES R
+		where type = 'discovery' and IS_DELETED ='N'
+		and CREATOR = BUV.ID
+		) MY_UPLOAD_DISCOVERY_NUM
+		,
+		(select count(id) myFollowDiscoveryNum from RESOURCES R
+		where type = 'discovery' and IS_DELETED = 'N'
+		and exists (select 1 from FOLLOW F where IS_DELETED = 'N' and FOLLOWED_ID = R.ID and CREATOR = BUV.ID)
+		) MY_FOLLOW_DISCOVERY_NUM
+		,
+		(select count(id) resourceNum from RESOURCES R
+		where type != 'discovery' and IS_DELETED ='N'
+		and (R.CREATOR = BUV.ID  or exists (select 1 from FOLLOW F where IS_DELETED = 'N' and FOLLOWED_ID = R.ID and
+		F.CREATOR = BUV.ID )) 
+		) RESOURCE_NUM
+		,
+		(select count(id) myUploadResourceNum from RESOURCES R
+		where type != 'discovery' and IS_DELETED ='N'
+		and CREATOR = BUV.ID
+		) MY_UPLOAD_RESOURCE_NUM
+		,
+		(select count(id) myFollowResourceNum from RESOURCES R
+		where type != 'discovery' and IS_DELETED = 'N'
+		and exists (select 1 from FOLLOW F where IS_DELETED = 'N' and FOLLOWED_ID = R.ID and CREATOR = BUV.ID)
+		)  MY_FOLLOW_RESOURCE_NUM
+		,
+		(select count(id) myCompetitionNum from COMPETITION C
+		where exists(select 1 from RESOURCES R join RESOURCE_RELATION RR ON RR.RESOURCE_ID = R.id and R.IS_DELETED = 'N' where RR.RELATION_ID = C.ID and R.CREATOR = BUV.ID )
+		) MY_COMPETITION_NUM
+		,
+		(select count(D.ID) myDiscussionNum from DISCUSSION D join DISCUSSION_RELATION DR on D.ID = DR.DISCUSSION_ID  and DR.RELATION_TYPE='board'
+		where D.CREATOR = BUV.ID
+		) MY_DISCUSSION_NUM
+		from BASE_USER_VIEW BUV
+		where BUV.ID = #{creator}
+	</select>
+	<select id="getCount" parameterType="map" resultType="int">
+		select count(R.ID)
+		from RESOURCES R
+		where R.IS_DELETED = 'N'
+		<if test="relationId != null and relationId != ''">
+			and exists (select 1 from RESOURCE_RELATION where RESOURCE_ID = R.ID and IS_DELETED = 'N' and RELATION_ID = #{relationId})
+		</if>
+		<if test="type!=null and type !=''">
+			and R.TYPE=#{type}
+		</if>
+		<if test="creator!=null and creator!=''">
+			and R.CREATOR=#{creator}
+		</if>
+		<if test="typeNotEquils != null and typeNotEquils != ''">
+			and R.TYPE != #{typeNotEquils}
+		</if>
+		<if test="followCreator != null and followCreator!=''">
+			and exists (select 1 from FOLLOW F where IS_DELETED = 'N' and FOLLOWED_ID = R.ID and CREATOR = #{followCreator})
+		</if>
+		<if test="creatorOrFollowCreator != null and creatorOrFollowCreator!=''">
+			and (R.CREATOR = #{creatorOrFollowCreator} or exists (select 1 from FOLLOW F where IS_DELETED = 'N' and FOLLOWED_ID = R.ID and F.CREATOR = #{creatorOrFollowCreator}))
+		</if>
+		<if test="idNotEquils != null and idNotEquils != ''">
+			and R.ID != #{idNotEquils, jdbcType=VARCHAR}
+		</if>
+		<if test="minCreateTime != null and minCreateTime != ''">
+			and R.CREATE_TIME <![CDATA[>]]> #{minCreateTime,jdbcType=INTEGER}
+		</if>
+		<if test="maxCreateTime != null and maxCreateTime != ''">
+			and R.CREATE_TIME <![CDATA[<]]> #{maxCreateTime,jdbcType=INTEGER}
+		</if>
+		<if test="stateNotEquils != null and stateNotEquils != ''">
+			and R.STATE != #{stateNotEquils, jdbcType=VARCHAR}
+		</if>
+	</select>
+</mapper>

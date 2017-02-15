@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<taglib>
+	<tlib-version>1.1.2</tlib-version>
+	<jsp-version>2.0</jsp-version>
+	<short-name>textBook</short-name>
+	<uri>http://textBook.haoyu.com</uri>
+	<description>TextBook Function lib</description>
+	<function>
+		<name>getEntryName</name>
+		<function-class>com.haoyu.sip.textbook.utils.TextBookUtils</function-class>
+		<function-signature>java.lang.String getEntryName(java.lang.String,java.lang.String)</function-signature>
+	</function>
+	<function>
+		<name>getEntryOptionsSelected</name>
+		<function-class>com.haoyu.sip.textbook.utils.TextBookUtils</function-class>
+		<function-signature>java.lang.String getEntryOptionsSelected(java.lang.String,java.lang.String)</function-signature>
+	</function>
+</taglib>

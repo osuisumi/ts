@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.user.dao.impl.mybatis.AccountMapper">
+	<insert id="insert" parameterType="com.haoyu.user.entity.Account">
+		insert into TS_ACCOUNT
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="userName != null">
+				USER_NAME,
+			</if>
+			<if test="password != null">
+				PASSWORD,
+			</if>
+			<if test="roleCode != null">
+				ROLE_CODE,
+			</if>
+			<if test="state != null">
+				STATE,
+			</if>
+			<if test="user != null">
+				USER_ID,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="userName != null">
+				#{userName,jdbcType=VARCHAR},
+			</if>
+			<if test="password != null">
+				#{password,jdbcType=VARCHAR},
+			</if>
+			<if test="roleCode != null">
+				#{roleCode,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				#{state,jdbcType=VARCHAR},
+			</if>
+			<if test="user != null">
+				#{user.id,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null and createTime > 0">
+				#{createTime,jdbcType=INTEGER},
+			</if>
+			<if test="updatedby != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null and updateTime > 0">
+				#{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.user.entity.Account">
+		update TS_ACCOUNT 
+		<set>
+			<if test="userName != null">
+				USER_NAME = #{userName,jdbcType=VARCHAR},
+			</if>
+			<if test="password != null">
+				PASSWORD = #{password,jdbcType=VARCHAR},
+			</if>
+			<if test="roleCode != null">
+				ROLE_CODE = #{roleCode,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				STATE = #{state,jdbcType=VARCHAR},
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null and updateTime > 0">
+				UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id, jdbcType=VARCHAR}
+	</update>
+	<update id="updateByIds" parameterType="map">
+		update TS_ACCOUNT TA
+		<set>
+			<if test="entity.state != null">
+				STATE = #{entity.state,jdbcType=VARCHAR},
+			</if>
+			<if test="entity.password != null">
+				PASSWORD = #{entity.password,jdbcType=VARCHAR},
+			</if>
+			<if test="entity.updatedby != null">
+				UPDATEDBY = #{entity.updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="entity.updateTime != null and entity.updateTime > 0">
+				UPDATE_TIME = #{entity.updateTime,jdbcType=INTEGER},
+			</if>
+		</set>
+		<trim prefix="where" prefixOverrides="and">
+			<if test="ids != null">
+				and ID in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="userIds != null">
+				and USER_ID in (select ID from TS_USER where ID = TA.USER_ID and IS_DELETED = 'N' and ID in
+				<foreach collection="userIds" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+				)
+			</if>
+		</trim>
+	</update>
+	<update id="deleteByIds" parameterType="map">
+		update TS_ACCOUNT TA
+		set IS_DELETED = 'Y', UPDATE_TIME = #{entity.updateTime,jdbcType=INTEGER}
+		<if test="updatedby != null">
+			,UPDATEDBY = #{entity.id,jdbcType=VARCHAR}
+		</if>
+		<trim prefix="where" prefixOverrides="and">
+			<if test="ids != null">
+				and ID in
+				<foreach collection="ids" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+			</if>
+			<if test="userIds != null">
+				and USER_ID in (select ID from TS_USER where ID = TA.USER_ID and IS_DELETED = 'N' and ID in
+				<foreach collection="userIds" open="(" close=")" separator="," item="item">
+					#{item}
+				</foreach>
+				)
+			</if>
+		</trim>
+	</update>
+</mapper>

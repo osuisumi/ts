@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context" xsi:schemaLocation="
+http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-3.2.xsd
+">
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">  
+		 <!-- sessionManager -->
+    	<!-- <property name="sessionManager" ref="sessionManager" /> -->
+        <property name="realm" ref="authRealm" />  
+  <!--       <property name="cacheManager" ref="shiroRedisManager" />  -->
+    </bean>  
+      
+    <!-- <bean id="userLoginAttemptService" class="com.haoyu.ipanther.common.login.service.impl.UserLoginAttemptServiceImpl">
+    	<property name="maxAttempts" value="3"/>
+    </bean> -->
+    
+    <bean id="authRealm" class="com.haoyu.auth.AuthRealm" />  
+
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">  
+        <property name="securityManager" ref="securityManager" />  
+        <property name="loginUrl" value="/login.do" />  
+        <property name="successUrl" value="/home.do" />  
+        <property name="unauthorizedUrl" value="/403.jsp" />          
+        <property name="filterChainDefinitions">  
+            <value> 
+                /index.do = authc
+                /login.do = authc
+                /logout.do = anon
+	            /** = cu
+            </value>  
+        </property>  
+        <property name="filters">
+			<map>
+				<entry key="cu" value-ref="currentUserFilter" />
+			</map>
+		</property>
+    </bean>  
+    <bean id="currentUserFilter" class="com.haoyu.filter.CurrentUserFilter"/>
+    
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>  
+      
+    <!-- <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" depends-on="lifecycleBeanPostProcessor" >  
+    </bean>  --> 
+      
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">  
+        <property name="securityManager" ref="securityManager"/>  
+    </bean>
+    
+	<!-- shiro redisManager -->
+	<bean id="redisManager" class="org.crazycake.shiro.RedisManager">
+	    <property name="host" value="192.168.0.4"/>
+	    <property name="port" value="6379"/>
+	    <property name="expire" value="1800"/>
+	    <!-- optional properties:
+	    <property name="timeout" value="10000"/>
+	    <property name="password" value="123456"/>
+	    -->
+	</bean>
+	
+	<!-- redisSessionDAO -->
+	<bean id="redisSessionDAO" class="org.crazycake.shiro.RedisSessionDAO">
+	    <property name="redisManager" ref="redisManager" />
+	</bean>
+	
+	<!-- cacheManager -->
+	<bean id="shiroRedisManager" class="org.crazycake.shiro.RedisCacheManager">
+	    <property name="redisManager" ref="redisManager" />
+	</bean>  
+</beans>

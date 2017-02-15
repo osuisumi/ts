@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.user.dao.impl.mybatis.UserMapper">
+	<resultMap id="LoginerMapper" type="com.haoyu.index.entity.Loginer">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="REAL_NAME" property="realName" jdbcType="VARCHAR" />	
+		<result column="DEPT_NAME" property="deptName" jdbcType="VARCHAR" />	
+		<result column="DEPT_ID" property="deptId" jdbcType="VARCHAR" />
+		<result column="AVATAR" property="avatar" jdbcType="VARCHAR"/>	
+		<result column="STATE" property="state" jdbcType="VARCHAR"/>
+		<result column="PASSWORD" property="password" jdbcType="VARCHAR"/>
+	</resultMap>
+	<resultMap id="UserMapper" type="com.haoyu.user.entity.User">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="REAL_NAME" property="realName" jdbcType="VARCHAR" />	
+		<result column="PAPERWORK_NO" property="paperworkNo" jdbcType="VARCHAR" />	
+		<result column="BORN_DATE" property="bornDate" jdbcType="TIMESTAMP" />	
+		<result column="AVATAR" property="avatar" jdbcType="VARCHAR" />	
+		<result column="SUMMARY" property="summary" jdbcType="VARCHAR" />	
+		<result column="SEX" property="sex" jdbcType="VARCHAR" />	
+		<result column="POST" property="post" jdbcType="VARCHAR" />	
+		<result column="PHONE" property="phone" jdbcType="VARCHAR" />	
+		<result column="EMAIL" property="email" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="VARCHAR" />
+		<result column="STAGE" property="stage" jdbcType="VARCHAR"/>	
+		<result column="SUBJECT" property="subject" jdbcType="VARCHAR"/>	
+		
+		<result column="DEPT_NAME" property="department.deptName" jdbcType="VARCHAR" />
+		<result column="DEPT_ID" property="department.id" jdbcType="VARCHAR" />
+		
+		<result column="USER_NAME" property="account.userName" jdbcType="VARCHAR" />
+		<result column="PASSWORD" property="account.password" jdbcType="VARCHAR" />
+		<result column="STATE" property="account.state" jdbcType="VARCHAR" />
+		<result column="ACCOUNT_ID" property="account.id" jdbcType="VARCHAR" />
+		
+		<result column="USER_DEPT_ID" property="userDept.id" jdbcType="VARCHAR" />
+		
+		<result column="ROLE_NAME" property="authRole.name" jdbcType="VARCHAR" />
+		<result column="ROLE_ID" property="authRole.id" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="BaseSelectSql">
+		select TU.ID, TU.REAL_NAME, TU.PAPERWORK_NO, TU.BORN_DATE, TU.AVATAR, TU.SUMMARY, TU.SEX, TU.POST, TU.PHONE, TU.EMAIL, TU.CREATE_TIME,TU.STAGE,TU.SUBJECT,
+		TD.DEPT_NAME, TD.ID DEPT_ID,
+		TA.USER_NAME, TA.PASSWORD, TA.STATE, TA.ID ACCOUNT_ID,
+		TUD.ID USER_DEPT_ID,
+		AR.NAME ROLE_NAME, AR.ID ROLE_ID
+		from TS_USER TU
+		left join TS_USER_DEPT TUD
+		on TU.ID = TUD.USER_ID
+		left join TS_DEPARTMENT TD
+		on TD.ID = TUD.DEPT_ID
+		and TD.IS_DELETED = 'N'
+		left join TS_ACCOUNT TA
+		on TA.USER_ID = TU.ID
+		and TA.IS_DELETED = 'N'
+		left join AUTH_USER_ROLE AUR
+		on AUR.USER_ID =  TU.ID
+		left join AUTH_ROLE AR
+		on AUR.ROLE_ID = AR.ID
+		and AR.IS_DELETED = 'N'
+	</sql>
+	<select id="getLoginer" parameterType="com.haoyu.sip.login.Loginer" resultMap="LoginerMapper">
+		select ID, REAL_NAME, DEPT_NAME, DEPT_ID,AVATAR, STATE, PASSWORD
+		from BASE_USER_VIEW
+		where (USER_NAME = #{userName, jdbcType=VARCHAR} or PAPERWORK_NO = #{userName, jdbcType=VARCHAR})
+	</select>	
+	<select id="select" parameterType="map" resultMap="UserMapper">
+		<include refid="BaseSelectSql" />
+		where TU.IS_DELETED = 'N'
+		<if test="realName != null and realName != ''">
+			and TU.REAL_NAME like '%${realName}%'
+		</if>
+		<if test="userName != null and userName != ''">
+			and TA.USER_NAME like '%${userName}%'
+		</if>
+		<if test="deptName != null and deptName != ''">
+			and TD.DEPT_NAME like '%${deptName}%'
+		</if>
+		<if test="userName != null and userName != '' and paperworkNo != null and paperworkNo != ''">
+			and (TA.USER_NAME = #{userName} or TU.PAPERWORK_NO = #{paperworkNo})
+		</if>
+		<if test="roleId != null and roleId != ''">
+			and AR.ID = #{roleId}
+		</if>
+		<if test="deptId != null and deptId != ''">
+			and TD.ID = #{deptId}
+		</if>
+		<if test="roleCode != null and roleCode != ''">
+			and AR.CODE = #{roleCode}
+		</if>
+		<if test="ids != null">
+			and TU.ID in
+			<foreach collection="ids" open="(" close=")" item="id" separator=",">
+				#{id,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+	</select>
+	<select id="selectByPrimaryKey" parameterType="string" resultMap="UserMapper">
+		<include refid="BaseSelectSql" />
+		where TU.ID = #{id, jdbcType=VARCHAR}
+	</select>
+	<insert id="insert" parameterType="com.haoyu.user.entity.User">
+		insert into TS_USER
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="realName != null">
+				REAL_NAME,
+			</if>
+			<if test="paperworkNo != null">
+				PAPERWORK_NO,
+			</if>
+			<if test="sex != null">
+				SEX,
+			</if>
+			<if test="post != null">
+				POST,
+			</if>
+			<if test="phone != null">
+				PHONE,
+			</if>
+			<if test="email != null">
+				EMAIL,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="realName != null">
+				#{realName,jdbcType=VARCHAR},
+			</if>
+			<if test="paperworkNo != null">
+				#{paperworkNo,jdbcType=VARCHAR},
+			</if>
+			<if test="sex != null">
+				#{sex,jdbcType=VARCHAR},
+			</if>
+			<if test="post != null">
+				#{post,jdbcType=VARCHAR},
+			</if>
+			<if test="phone != null">
+				#{phone,jdbcType=VARCHAR},
+			</if>
+			<if test="email != null">
+				#{email,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null and createTime > 0">
+				#{createTime,jdbcType=INTEGER},
+			</if>
+			<if test="updatedby != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null and updateTime > 0">
+				#{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<insert id="insertUserDept" parameterType="com.haoyu.user.entity.UserDept">
+		insert into TS_USER_DEPT(ID, USER_ID, DEPT_ID)
+		values(#{id, jdbcType=VARCHAR}, #{userId, jdbcType=VARCHAR}, #{deptId, jdbcType=VARCHAR})
+	</insert>
+	<select id="getCount" parameterType="map" resultType="int">
+		select count(TU.ID)
+		from TS_USER TU
+		join TS_ACCOUNT TA
+		on TU.ID = TA.USER_ID
+		and TA.IS_DELETED = 'N'
+		where TU.IS_DELETED = 'N'
+		<if test="realName != null and realName != ''">
+			and TU.REAL_NAME = #{realName, jdbcType=VARCHAR}
+		</if>
+		<if test="userName != null and userName != ''">
+			and TA.USER_NAME = #{userName, jdbcType=VARCHAR}
+		</if>
+		<if test="paperworkNo != null and paperworkNo != ''">
+			and TU.PAPERWORK_NO = #{paperworkNo, jdbcType=VARCHAR}
+		</if>
+	</select>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.user.entity.User">
+		update TS_USER
+		<set>
+			<if test="realName != null">
+				REAL_NAME = #{realName,jdbcType=VARCHAR},
+			</if>
+			<if test="sex != null">
+				SEX = #{sex,jdbcType=VARCHAR},
+			</if>
+			<if test="post != null">
+				POST = #{post,jdbcType=VARCHAR},
+			</if>
+			<if test="phone != null">
+				PHONE = #{phone,jdbcType=VARCHAR},
+			</if>
+			<if test="email != null">
+				EMAIL = #{email,jdbcType=VARCHAR},
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null and updateTime > 0">
+				UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="summary != null">
+				SUMMARY = #{summary,jdbcType=VARCHAR},
+			</if>
+			<if test="bornDate != null">
+				BORN_DATE = #{bornDate,jdbcType=VARCHAR},
+			</if>
+			<if test="avatar != null">
+				AVATAR = #{avatar,jdbcType=VARCHAR},
+			</if>
+			<if test="stage != null">
+				STAGE = #{stage,jdbcType=VARCHAR},
+			</if>
+			<if test="subject !=null">
+				SUBJECT = #{subject,jdbcType=VARCHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id, jdbcType=VARCHAR}
+	</update>
+	<update id="updateUserDept" parameterType="com.haoyu.user.entity.UserDept">
+		update TS_USER_DEPT
+		<set>
+			<if test="deptId != null">
+				DEPT_ID = #{deptId,jdbcType=VARCHAR},
+			</if>
+		</set>
+		where ID = #{id, jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByIds" parameterType="map">
+		update TS_USER
+		set IS_DELETED = 'Y', UPDATE_TIME = #{entity.updateTime,jdbcType=INTEGER}
+		<if test="updatedby != null">
+			,UPDATEDBY = #{entity.id,jdbcType=VARCHAR}
+		</if>
+		where ID in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+</mapper>

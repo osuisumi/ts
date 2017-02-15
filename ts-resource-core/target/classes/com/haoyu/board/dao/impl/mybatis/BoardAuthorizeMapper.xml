@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.board.dao.impl.mybatis.BoardAuthorizeMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.board.entity.BoardAuthorize">
+		<id property="id" column="ID" jdbcType="VARCHAR" />
+		<result property="boardId" column="BOARD_ID" jdbcType="VARCHAR" />
+		<result property="user.id" column="USER_ID"  jdbcType="VARCHAR" />	
+		<result property="user.realName" column="USER_REAL_NAME"  jdbcType="VARCHAR" />		
+		<result property="role" column="ROLE" jdbcType="VARCHAR" />
+		<result property="state" column="STATE" jdbcType="VARCHAR" />
+	    <result property="createTime" column="CREATE_TIME" jdbcType="INTEGER" />	
+		<result property="updateTime" column="UPDATE_TIME" jdbcType="INTEGER" />
+		<result property="creator.id" column="CREATOR"  jdbcType="VARCHAR" />
+		<result property="updatedby.id" column="UPDATEDBY"  jdbcType="VARCHAR" />
+		<result property="isDeleted" column="IS_DELETED"  jdbcType="VARCHAR" />	
+		<result property="version" column="VERSION"  jdbcType="INTEGER" />
+	</resultMap>
+	
+	<select id="select" parameterType="map" resultMap="BaseResultMap" >
+		select B.ID , B.BOARD_ID , B.USER_ID , B.ROLE , B.STATE, t.REAL_NAME  USER_REAL_NAME
+		from BOARD_AUTHORIZE B
+		join TS_USER t
+		on B.USER_ID = t.ID
+		and t.IS_DELETED = 'N'
+		where B.IS_DELETED = 'N'
+		<if test="boardId != null and boardId !='' ">
+			and B.BOARD_ID = #{boardId,jdbcType=VARCHAR}
+		</if>
+		<if test="ids != null and ids.size > 0 ">
+			and B.BOARD_ID in
+			<foreach collection="ids" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+		
+		<if test="role != null and role !='' ">
+			and B.ROLE = #{role,jdbcType=VARCHAR}
+		</if>
+		<if test="userId != null and userId != ''">
+			and B.USER_ID = #{userId,jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+		<insert id="insert" parameterType="com.haoyu.board.entity.BoardAuthorize">
+		insert into BOARD_AUTHORIZE
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="boardId != null">
+				BOARD_ID,
+			</if>
+			<if test="user != null and user.id != null ">
+				USER_ID,
+			</if>
+			<if test="role != null">
+				ROLE,
+			</if>
+			<if test="state != null">
+				STATE,
+			</if>
+			<if test="creator!=null and creator.id != null">
+				CREATOR,
+			</if>
+			<if test="updatedby!=null and updatedby.id != null">
+				UPDATEDBY,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+			<if test="version != null">
+				VERSION
+			</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id},
+			</if>
+			<if test="boardId != null">
+				#{boardId},
+			</if>
+			<if test="user != null and user.id != null ">
+				#{user.id},
+			</if>
+			<if test="role != null">
+				#{role},
+			</if>
+			<if test="state != null">
+				#{state},
+			</if>
+			<if test="creator!=null and creator.id != null">
+				#{creator.id},
+			</if>
+			<if test="updatedby!=null and updatedby.id != null">
+				#{updatedby.id},
+			</if>
+			<if test="createTime != null">
+				#{createTime},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted},
+			</if>
+			<if test="version != null">
+				#{version}
+			</if>
+		</trim>
+	</insert>
+	
+	<update id="deleteByLogic" parameterType="com.haoyu.board.entity.BoardAuthorize">
+		update BOARD_AUTHORIZE
+		set IS_DELETED = 'Y', UPDATE_TIME = #{updateTime,jdbcType=INTEGER}
+		<if test="updatedby != null">
+			,UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR}
+		</if>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<delete id="deleteByPhysics" parameterType="string">
+		delete from BOARD_AUTHORIZE
+		where ID = #{id, jdbcType=VARCHAR}
+	</delete>
+	
+</mapper>

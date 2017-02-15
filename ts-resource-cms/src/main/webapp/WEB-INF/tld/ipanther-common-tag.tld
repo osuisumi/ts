@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib>
+	<tlib-version>1.0</tlib-version>
+	<jsp-version>2.0</jsp-version>
+	<short-name>ipanther-common</short-name>
+	<uri>http://ipanther-common.haoyi.com</uri>
+	<description>IPanther Common Function lib</description>
+	<function>
+		<name>getFdfsHttpHost</name>
+		<function-class>com.haoyu.sip.file.utils.FileUtils</function-class>
+		<function-signature>java.lang.String getHttpHost()</function-signature>
+	</function>
+	<function>
+		<name>inCurrentDate</name>
+		<function-class>com.haoyu.yx.utils.TimeUtils</function-class>
+		<function-signature>boolean inCurrentDate(java.util.Date,java.util.Date)</function-signature>
+	</function>
+	<function>
+		<name>getLetter</name>
+		<function-class>com.haoyu.yx.utils.LetterUtils</function-class>
+		<function-signature>String getLetter(int)</function-signature>
+	</function>
+	<function>
+		<name>getBooleanFromRequest</name>
+		<function-class>com.haoyu.yx.utils.CommonUtils</function-class>
+		<function-signature>boolean getBooleanFromRequest(javax.servlet.http.HttpServletRequest, java.lang.String)</function-signature>
+	</function>
+	<function>
+		<name>formatDate</name>
+		<function-class>com.haoyu.sip.utils.TimeUtils</function-class>
+		<function-signature>java.lang.String formatDate(long, java.lang.String)</function-signature>
+	</function>
+</taglib>

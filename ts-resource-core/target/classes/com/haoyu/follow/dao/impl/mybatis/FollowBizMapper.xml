@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.follow.dao.impl.mybatis.FollowBizMapper" >
+<!--   <insert id="insert" parameterType="map" >
+    insert into FOLLOW (ID, FOLLOWED_ID, FOLLOWED_TYPE,CREATOR,CREATE_TIME,IS_DELETED,VERSION)
+    values
+    select id from TEXT_BOOK_ENTRY TBE
+    where TBE.ID in
+   	<foreach collection="idMap" separator="," item="item">
+   (
+   #{item.id,jdbcType=VARCHAR},
+   #{item.followedId,jdbcType=VARCHAR},
+   #{entity.followEntity.type,jdbcType=VARCHAR},
+   #{entity.creator.id,jdbcType=VARCHAR},
+   #{entity.createTime,jdbcType=BIGINT},
+   #{entity.isDeleted,jdbcType=VARCHAR},
+   #{entity.version,jdbcType=DECIMAL}
+   )
+   </foreach>
+  </insert> -->
+  <resultMap type="com.haoyu.user.entity.User" id="userResultMap">
+  	<id column="ID" property="id" jdbcType="VARCHAR"></id>
+  	<result column="REAL_NAME" property="realName" jdbcType="VARCHAR"/>
+  	<result column="AVATAR" property="avatar" jdbcType="VARCHAR"/>
+  	<result column="DEPT_NAME" property="department.deptName" jdbcType="VARCHAR"/>
+  </resultMap>
+  
+  <select id="selectFollowUser" parameterType="java.util.Map" resultMap="userResultMap">
+  		select BUV.ID,BUV.REAL_NAME,BUV.AVATAR,BUV.DEPT_NAME from BASE_USER_VIEW BUV
+  		join FOLLOW F on BUV.ID = F.FOLLOWED_ID and F.FOLLOWED_TYPE = 'subscribe_user'
+  		<where>
+  			<if test="creator != null and creator != ''">
+  				F.CREATOR = #{creator,jdbcType=VARCHAR}
+  			</if>
+  			<if test="idNotEqual != null and idNotEqual != ''">
+  				and BUV.ID != #{idNotEqual,jdbcType=VARCHAR}
+  			</if>
+  		</where>
+  </select>
+</mapper>

@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.competition.dao.impl.mybatis.CompetitionMapper">
+	<resultMap type="com.haoyu.competition.entity.Competition" id="CompetitionResult">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="TITLE" property="title" jdbcType="VARCHAR" />
+		<result column="SUMMARY" property="summary" jdbcType="VARCHAR" />
+		<result column="FACE_GROUP" property="faceGroup" jdbcType="VARCHAR" />
+		<result column="COMPETITION_START_TIME" property="competitionTimePeriod.startTime" jdbcType="VARCHAR" />
+		<result column="COMPETITION_END_TIME" property="competitionTimePeriod.endTime" jdbcType="VARCHAR" />
+		<result column="ATTITUDE_START_TIME" property="attitudeTimePeriod.startTime" jdbcType="VARCHAR" />
+		<result column="ATTITUDE_END_TIME" property="attitudeTimePeriod.endTime" jdbcType="VARCHAR" />
+		<result column="MAIN_ORGANIZATION" property="mainOrganization" jdbcType="VARCHAR" />
+		<result column="ASSIST_ORGANIZATION" property="assistOrganization" jdbcType="VARCHAR" />
+		<result column="UNDERTAKE_ORGANIZATION" property="undertakeOrganization" jdbcType="VARCHAR" />
+		<result column="PHONE" property="phone" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="VARCHAR" />
+		<result column="UPDATEDBY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="VARCHAR" />
+		<result column="VERSION" property="version" jdbcType="VARCHAR" />
+		<result column="IS_DELETED" property="isDeleted" jdbcType="VARCHAR" />
+		<result column="IMAGE_URL" property="imageUrl" jdbcType="VARCHAR"/>
+		<result column="TYPE" property="type" jdbcType="VARCHAR"/>
+		<association property="creator" javaType="com.haoyu.sip.core.entity.User">
+			<id property="id" column="CREATOR_ID" />
+			<result property="realName" column="CREATOR_REAL_NAME" />
+		</association>
+
+	</resultMap>
+
+	<sql id="baseCommend">
+		C.ID,C.TITLE,C.SUMMARY,C.FACE_GROUP,C.COMPETITION_START_TIME,C.COMPETITION_END_TIME,C.ATTITUDE_START_TIME,C.ATTITUDE_END_TIME,C.MAIN_ORGANIZATION,C.ASSIST_ORGANIZATION,C.UNDERTAKE_ORGANIZATION,C.PHONE,C.CREATE_TIME,C.IMAGE_URL,C.TYPE
+	</sql>
+
+	<select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="CompetitionResult">
+		select
+		<include refid="baseCommend"></include>
+		from COMPETITION C
+		where C.IS_DELETED = 'N'
+		and C.ID = #{id,jdbcType=VARCHAR}
+	</select>
+
+	<select id="select" parameterType="map" resultMap="CompetitionResult">
+		select
+		<include refid="baseCommend"></include>
+		<!-- 查询活动的资源数 暂时为热门活动排序用 -->
+		<if test="resourceNum != null and resourceNum != ''">
+			,(select count(id) from RESOURCE_RELATION RR where RR.RELATION_ID = C.id)RESOURCE_NUM
+		</if>
+		from COMPETITION C
+		where C.IS_DELETED = 'N'
+		<if test="title != null and title != ''">
+		and TITLE like '%${title}%'
+		</if>
+		<if test="minCreateTime != null and minCreateTime != null">
+			and C.CREATE_TIME <![CDATA[>]]> #{minCreateTime,jdbcType=INTEGER}
+		</if>
+		<if test="maxCreateTime != null and maxCreateTime != ''">
+			and C.CREATE_TIME <![CDATA[<]]> #{maxCreateTime,jdbcType=INTEGER}
+		</if>
+		<if test="timeState != null and timeState != ''">
+			<choose>
+			<when test="timeState == 'begin'">
+				and C.COMPETITION_END_TIME <![CDATA[>]]> #{now,jdbcType=DATE} and C.COMPETITION_START_TIME <![CDATA[<=]]> #{now,jdbcType=DATE}
+			</when>
+			<when test="timeState == 'before'">
+				and C.COMPETITION_START_TIME <![CDATA[>]]> #{now,jdbcType=DATE}
+			</when>
+			<when test="timeState == 'end'">
+				and C.COMPETITION_END_TIME 	<![CDATA[<=]]> #{now,jdbcType=DATE}
+			</when>
+			</choose>
+		</if>	
+		<if test="creator != null and creator != ''">
+			and EXISTS(select 1 from RESOURCES R join RESOURCE_RELATION RR on RR.RESOURCE_ID = R.ID and  R.IS_DELETED='N' where RR.RELATION_ID = C.ID and R.CREATOR=#{creator,jdbcType=VARCHAR})
+		</if>
+	</select>
+	
+	<update id="update" parameterType="com.haoyu.competition.entity.Competition">
+		update COMPETITION C
+		<set>
+			<if test="title != null and title != ''">
+				TITLE = #{title},
+			</if>
+			<if test="summary != null and summary != ''">
+				SUMMARY = #{summary},
+			</if>
+			<if test="faceGroup != null and faceGroup != ''">
+				FACE_GROUP = #{faceGroup},
+			</if>
+			<if test="competitionTimePeriod !=null and competitionTimePeriod.startTime != null">
+				COMPETITION_START_TIME = #{competitionTimePeriod.startTime},
+			</if>
+			<if test="competitionTimePeriod !=null and competitionTimePeriod.endTime != null">
+				COMPETITION_END_TIME = #{competitionTimePeriod.endTime},
+			</if>
+			<if test="attitudeTimePeriod !=null and attitudeTimePeriod.startTime != null">
+				ATTITUDE_START_TIME = #{attitudeTimePeriod.startTime},
+			</if>
+			<if test="attitudeTimePeriod !=null and attitudeTimePeriod.endTime != null">
+				ATTITUDE_END_TIME = #{attitudeTimePeriod.endTime},
+			</if>
+			<if test="mainOrganization !=null">
+				MAIN_ORGANIZATION = #{mainOrganization},
+			</if>
+			<if test="assistOrganization != null">
+				ASSIST_ORGANIZATION = #{assistOrganization},
+			</if>
+			<if test="undertakeOrganization != null">
+				UNDERTAKE_ORGANIZATION = #{undertakeOrganization},
+			</if>
+			<if test="phone != null">
+				PHONE = #{phone},
+			</if>
+			<if test="type != null">
+				TYPE = #{type,jdbcType=VARCHAR},
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+			</if>
+			VERSION = VERSION+1
+			where C.ID = #{id,jdbcType = VARCHAR}
+			
+		</set>
+	</update>
+	
+	<update id="deleteByIds" parameterType="map">
+		update COMPETITION C
+		set C.IS_DELETED = 'Y'
+		<if test="updateTime != null">
+			,C.UPDATE_TIME = #{updateTime}
+		</if>
+		where C.ID in
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+	<insert id="insert" parameterType="com.haoyu.competition.entity.Competition">
+		insert into COMPETITION
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="title != null">
+				TITLE,
+			</if>
+			<if test="summary != null">
+				SUMMARY,
+			</if>
+			<if test="faceGroup != null">
+				FACE_GROUP,
+			</if>
+			<if test="competitionTimePeriod !=null and competitionTimePeriod.startTime != null">
+				COMPETITION_START_TIME,
+			</if>
+			<if test="competitionTimePeriod !=null and competitionTimePeriod.endTime != null">
+				COMPETITION_END_TIME,
+			</if>
+			<if test="attitudeTimePeriod !=null and attitudeTimePeriod.startTime != null">
+				ATTITUDE_START_TIME,
+			</if>
+			<if test="attitudeTimePeriod !=null and attitudeTimePeriod.endTime != null">
+				ATTITUDE_END_TIME,
+			</if>
+			<if test="mainOrganization !=null">
+				MAIN_ORGANIZATION,
+			</if>
+			<if test="assistOrganization != null">
+				ASSIST_ORGANIZATION,
+			</if>
+			<if test="undertakeOrganization != null">
+				UNDERTAKE_ORGANIZATION,
+			</if>
+			<if test="phone != null">
+				PHONE,
+			</if>
+			<if test="type != null">
+				TYPE,
+			</if>
+			<if test="creator!=null and creator.id != null">
+				CREATOR,
+			</if>
+			<if test="updatedby!=null and updatedby.id != null">
+				UPDATEDBY,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="imageUrl != null">
+				IMAGE_URL,
+			</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id},
+			</if>
+			<if test="title != null">
+				#{title},
+			</if>
+			<if test="summary != null">
+				#{summary},
+			</if>
+			<if test="faceGroup != null">
+				#{faceGroup},
+			</if>
+			<if test="competitionTimePeriod !=null and competitionTimePeriod.startTime != null">
+				#{competitionTimePeriod.startTime},
+			</if>
+			<if test="competitionTimePeriod !=null and competitionTimePeriod.endTime != null">
+				#{competitionTimePeriod.endTime},
+			</if>
+			<if test="attitudeTimePeriod !=null and attitudeTimePeriod.startTime != null">
+				#{attitudeTimePeriod.startTime},
+			</if>
+			<if test="attitudeTimePeriod !=null and attitudeTimePeriod.endTime != null">
+				#{attitudeTimePeriod.endTime},
+			</if>
+			<if test="mainOrganization !=null">
+				#{mainOrganization},
+			</if>
+			<if test="assistOrganization != null">
+				#{assistOrganization},
+			</if>
+			<if test="undertakeOrganization != null">
+				#{undertakeOrganization},
+			</if>
+			<if test="phone != null">
+				#{phone},
+			</if>
+			<if test="type != null">
+				#{type},
+			</if>
+			<if test="creator!=null and creator.id != null">
+				#{creator.id},
+			</if>
+			<if test="updatedby!=null and updatedby.id != null">
+				#{updatedby.id},
+			</if>
+			<if test="createTime != null">
+				#{createTime},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted},
+			</if>
+			<if test="version != null">
+				#{version},
+			</if>
+			<if test="imageUrl != null">
+				#{imageUrl},
+			</if>
+		</trim>
+	</insert>
+
+</mapper>
